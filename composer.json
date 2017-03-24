@@ -9,7 +9,9 @@
     "require": {
             "php": ">=5.5",
             "ext-pcre": "*",
-            "nikic/fast-route": "~1.2.0@stable"
+            "nikic/fast-route": "~1.2.0@stable",
+            "psr/http-message": "^1.0@stable",
+            "psr/cache": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.8"
@@ -19,5 +21,8 @@
         "psr-4": {
             "Resilient\\": "src"
         }
+    },
+    "suggest": {
+        "symfony/cache": "PSR16 Cache Interface Implementation for routes caching"
     }
 }

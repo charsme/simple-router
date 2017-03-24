@@ -1,13 +1,14 @@
 <?php
 
-namespace Resilient;
+namespace Resilient\Http;
 
 use InvalidArgumentException;
 use \Psr\Http\Message\UriInterface;
 
 class Uri implements UriInterface
 {
-    
+
+
     /**
      * Uri scheme (without "://" suffix)
      *
@@ -70,7 +71,7 @@ class Uri implements UriInterface
      * @var string
      */
     protected $fragment = '';
-    
+
     /**
      * Instance new Uri.
      *
@@ -83,8 +84,17 @@ class Uri implements UriInterface
      * @param string $user     Uri user.
      * @param string $password Uri password.
      */
-    public function __construct( $scheme, $host, $port = null, $path = '/', $query = '', $fragment = '', $user = '', $password = '' )
-    {
+    public function __construct(
+        $scheme,
+        $host,
+        $port = null,
+        $path = '/',
+        $query = '',
+        $fragment = '',
+        $user = '',
+        $password = ''
+    ) {
+
         $this->scheme = $this->filterScheme($scheme);
         $this->host = $host;
         $this->port = $this->filterPort($port);
@@ -94,7 +104,7 @@ class Uri implements UriInterface
         $this->user = $user;
         $this->password = $password;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -102,7 +112,7 @@ class Uri implements UriInterface
     {
         return $this->scheme;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -114,37 +124,58 @@ class Uri implements UriInterface
 
         return ($userInfo ? $userInfo . '@' : '') . $host . ($port !== null ? ':' . $port : '');
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getUserInfo()
     {
         return $this->user . ($this->password ? ':' . $this->password : '');
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getHost()
     {
         return $this->host;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPort()
     {
         return $this->port && !$this->hasStandardPort() ? $this->port : null;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPath()
     {
         return $this->path;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getQuery()
     {
         return $this->query;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getFragment()
     {
         return $this->fragment;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withScheme($scheme)
     {
         $scheme = $this->filterScheme($scheme);
@@ -153,7 +184,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withUserInfo($user, $password = null)
     {
         $clone = clone $this;
@@ -162,7 +196,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withHost($host)
     {
         $clone = clone $this;
@@ -170,7 +207,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withPort($port)
     {
         $port = $this->filterPort($port);
@@ -179,8 +219,11 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
-    public function withPath(string $path)
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withPath($path)
     {
         $clone = clone $this;
         $clone->path = $this->filterPath($path);
@@ -192,7 +235,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withQuery($query)
     {
         if (!is_string($query) && !method_exists($query, '__toString')) {
@@ -204,7 +250,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function withFragment($fragment)
     {
         if (!is_string($fragment) && !method_exists($fragment, '__toString')) {
@@ -216,7 +265,10 @@ class Uri implements UriInterface
 
         return $clone;
     }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function __toString()
     {
         $scheme = $this->getScheme();
@@ -234,8 +286,20 @@ class Uri implements UriInterface
             . ($query ? '?' . $query : '')
             . ($fragment ? '#' . $fragment : '');
     }
-    
-    protected function filterScheme($scheme)
+
+    /*
+        END OF UriInterface Implementation
+    */
+
+    /**
+     * filter scheme given to only allow certain scheme, no file:// or ftp:// or other scheme because its http message uri interface
+     *
+     * @access protected
+     * @param string $scheme
+     * @return string $scheme
+     * @throws InvalidArgumentException if not corret scheme is present
+     */
+    protected function filterScheme(string $scheme)
     {
         static $valid = [
             '' => true,
@@ -243,18 +307,23 @@ class Uri implements UriInterface
             'http' => true,
         ];
 
-        if (!is_string($scheme) && !method_exists($scheme, '__toString')) {
-            throw new InvalidArgumentException('Uri scheme must be a string');
-        }
-
-        $scheme = str_replace('://', '', strtolower((string)$scheme));
+        $scheme = str_replace('://', '', strtolower($scheme));
         if (!isset($valid[$scheme])) {
             throw new InvalidArgumentException('Uri scheme must be one of: "", "https", "http"');
         }
 
         return $scheme;
     }
-    
+
+
+    /**
+     * Filter allowable port to minimize risk
+     *
+     * @access protected
+     * @param mixed $port
+     * @return mixed $port
+     * @throws InvalidArgumentException for incorrect port assigned
+     */
     protected function filterPort($port)
     {
         if (is_null($port) || (is_integer($port) && ($port >= 1 && $port <= 65535))) {
@@ -263,7 +332,14 @@ class Uri implements UriInterface
 
         throw new InvalidArgumentException('Uri port must be null or an integer between 1 and 65535 (inclusive)');
     }
-    
+
+    /**
+     * Path allowed chars filter, no weird path on uri yes?.
+     *
+     * @access protected
+     * @param string $path
+     * @return rawurlencode of cleared path
+     */
     protected function filterPath($path)
     {
         return preg_replace_callback(
@@ -274,7 +350,14 @@ class Uri implements UriInterface
             $path
         );
     }
-    
+
+    /**
+     * replace query to clear not allowed chars
+     *
+     * @access protected
+     * @param string $query
+     * @return rawurlencode of replaced query
+     */
     protected function filterQuery($query)
     {
         return preg_replace_callback(
@@ -285,16 +368,141 @@ class Uri implements UriInterface
             $query
         );
     }
-    
+
+    /**
+     * cek if current uri scheme use standard port
+     *
+     * @access protected
+     * @return boolean
+     */
     protected function hasStandardPort()
     {
         return ($this->scheme === 'http' && $this->port === 80) || ($this->scheme === 'https' && $this->port === 443);
     }
-    
-    public function createFromHeader()
+
+
+    /**
+     * get BasePath property.
+     *
+     * @access public
+     * @return string basePath
+     */
+    public function getBasePath()
+    {
+        return $this->basePath;
+    }
+
+    /**
+     * Set BasePath Function to rewrite request.
+     *
+     * @access public
+     * @param string $basePath
+     * @return void
+     */
+    public function withBasePath(string $basePath)
+    {
+        $this->basePath = $basePath;
+    }
+
+
+    /**
+     * get Base Url
+     *
+     * @access public
+     * @return void
+     */
+    public function getBaseUrl()
+    {
+        $scheme = $this->getScheme();
+        $authority = $this->getAuthority();
+        $basePath = $this->getBasePath();
+
+        if ($authority && substr($basePath, 0, 1) !== '/') {
+            $basePath = $basePath . '/' . $basePath;
+        }
+
+        return ($scheme ? $scheme . ':' : '')
+            . ($authority ? '//' . $authority : '')
+            . rtrim($basePath, '/');
+    }
+
+    /**
+     * Create uri Instance from header $_SERVER.
+     *
+     * @access public
+     * @static
+     * @return Resilient\Http\Uri
+     */
+    public static function createFromHeader()
     {
         $serv = $_SERVER;
-        
-        
+
+        $scheme = isset($serv['HTTPS']) ? 'https://' : 'http://';
+        $host = empty($serv['HTTP_HOST']) ? $serv['HTTP_HOST'] : $serv['SERVER_NAME'];
+        $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
+
+        //Path
+        $scriptName = parse_url($_SERVER['SCRIPT_NAME'], PHP_URL_PATH);
+        $scriptPath = dirname($scriptName);
+
+        $requestUri = parse_url('http://www.example.com/' . $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        if (stripos($requestUri, $scriptName) === 0) {
+            $basePath = $scriptName;
+        } elseif ($scriptPath !== '/' && stripos($requestUri, $scriptPath) === 0) {
+            $basePath = $scriptPath;
+        }
+
+        if (empty($basePath)) {
+            $path = $requestUri;
+            $basePath = '';
+        } else {
+            $path = ltrim(substr($requestUri, strlen($basePath)), '/');
+        }
+
+        $query = empty($serv['QUERY_STRING']) ? parse_url('http://example.com' . $serv['REQUEST_URI'], PHP_URL_QUERY) : $serv['QUERY_STRING'];
+
+        $fragment = '';
+
+        $user = !empty($serv['PHP_AUTH_USER']) ? $serv['PHP_AUTH_USER'] : '';
+        $password = !empty($serv['PHP_AUTH_PW']) ? $serv['PHP_AUTH_PW'] : '';
+
+        if (empty($user) && empty($password) && !empty($serv['HTTP_AUTHORIZATION'])) {
+            list($user, $password) = explode(':', base64_decode(substr($serv['HTTP_AUTHORIZATION'], 6)));
+        }
+
+        $method = !empty($serv['REQUEST_METHOD']) ? $serv['REQUEST_METHOD'] : '';
+
+        $uri = new static($scheme, $host, $port, $path, $query, $fragment, $user, $password, $method);
+
+        if ($basePath) {
+            $uri->withBasePath($basePath);
+        }
+
+        return $uri;
+    }
+
+
+    /**
+     * Create Uri Instance from string http://www.example.com/url/path.html
+     *
+     * @access public
+     * @static
+     * @param string $uri
+     * @return Resilient\Http\Uri
+     */
+    public static function createFromString(string $uri)
+    {
+        $parts = parse_url($uri);
+        $scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
+        $user = isset($parts['user']) ? $parts['user'] : '';
+        $pass = isset($parts['pass']) ? $parts['pass'] : '';
+        $host = isset($parts['host']) ? $parts['host'] : '';
+        $port = isset($parts['port']) ? $parts['port'] : null;
+        $path = isset($parts['path']) ? $parts['path'] : '';
+        $query = isset($parts['query']) ? $parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
+
+        return new static($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
     }
 }
