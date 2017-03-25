@@ -2,12 +2,11 @@
 
 namespace Resilient;
 
-use \Resilient\Design\RouteableInterface;
-use \Resilient\Traits\Routeable;
+use \Resilient\Traits\Bindable;
 
-class Route implements RouteableInterface
+class Route
 {
-    use Routeable;
+    use Bindable;
 
     protected $method;
     protected $pattern;
@@ -15,20 +14,15 @@ class Route implements RouteableInterface
     protected $group;
     protected $identifier;
 
-    protected $callable;
+    protected $args;
 
-    public function __construct(string $method, string $pattern, string $handler, $group = '', $identifier = '')
+    public function __construct(string $method, string $pattern, $handler, $group = '', $identifier = '')
     {
         $this->method = $method;
         $this->pattern = $pattern;
         $this->handler = $handler;
         $this->group = $group;
         $this->identifier = $identifier;
-    }
-
-    public function map($methods, string $pattern, $handler)
-    {
-        return new self($methods, $pattern, $handler);
     }
 
     public function getMethod()
@@ -89,15 +83,15 @@ class Route implements RouteableInterface
         return $this;
     }
 
-    public function run()
+    public function setArgs($args)
     {
-        return $this->callable;
-    }
-
-    public function bind(callable $callable)
-    {
-        $this->callable = $callable->bindto($this);
+        $this->args = $args;
 
         return $this;
+    }
+
+    public function getArgs()
+    {
+        return $this->args;
     }
 }

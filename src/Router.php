@@ -2,9 +2,11 @@
 
 namespace Resilient;
 
+use RunTimeException;
 use \Resilient\Route;
 use \Resilient\Design\RouteableInterface;
 use \Resilient\Traits\Routeable;
+use \Resilient\Traits\Bindable;
 use \Resilient\Exception\MethodNotAllowedException;
 use \Resilient\Exception\NotFoundException;
 use \FastRoute\Dispatcher;
@@ -17,7 +19,7 @@ use \Psr\SimpleCache\CacheInterface;
 class Router implements RouteableInterface
 {
 
-    use Routeable;
+    use Routeable, Bindable;
 
     protected $routerName;
     protected $dispatch_result;
@@ -31,13 +33,14 @@ class Router implements RouteableInterface
     protected $parser;
     protected $dispatcher;
 
-    protected $uri;
-
     protected $cacheEngine;
     protected $cacheKey = "{Resilient\Router}/router.cache";
     protected $cacheTtl = 86400;
 
     protected $apiHandler;
+
+    protected $notFoundHandler;
+    protected $methodNotAllowedHandler;
 
     public function __construct($parser, $routefor = 'App')
     {
@@ -85,18 +88,6 @@ class Router implements RouteableInterface
         return $this;
     }
 
-    public function setUri(UriInterface $uri)
-    {
-        $this->uri = $uri;
-
-        return $this;
-    }
-
-    public function getUri()
-    {
-        return $this->uri;
-    }
-
     public function getRoute(string $identifier)
     {
         return !empty($this->routes[$identifier]) ? $this->routes[$identifier] : null;
@@ -131,6 +122,10 @@ class Router implements RouteableInterface
             $this->routeCount++;
 
             $this->routes[$route->getIdentifier()] = $route;
+
+            if (is_callable($handler)) {
+                $route->bind('run', $handler);
+            }
         }
 
         return $this;
@@ -139,14 +134,6 @@ class Router implements RouteableInterface
     protected function createRoute(string $method, string $pattern, $handler)
     {
         return new Route($method, $pattern, $handler, $this->routeGroup, 'route_' . $this->routeCount);
-    }
-
-    protected function handleException(Exception $e, UriInterface $uri)
-    {
-        if ($e instanceof MethodNotAllowedException)
-        {
-
-        }
     }
 
     protected function routeDispatcher(callable $routeDefinitionCallback, array $options = [])
@@ -204,21 +191,52 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        switch ($this->dispatch_result[0]) {
-            case Dispatcher::NOT_FOUND:
-                // ... 404 Not Found
-                break;
-            case Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $routeInfo[1];
-                // ... 405 Method Not Allowed
-                break;
-            case Dispatcher::FOUND:
-                $handler = $routeInfo[1];
-                $vars = $routeInfo[2];
-                // ... call $handler with $vars
-                break;
+        $functionHandler = function ($arg) use ($uri) {
+            if (method_exists($this, $arg['methodName'])) {
+                return $this->{$arg['methodName']}(...$arg['args']);
+            } else {
+                if (!empty($arg['exceptionName'])) {
+                    throw new $arg['exceptionName'](...$arg['args']);
+                } else {
+                    throw new RunTimeException('There is no method or exception to handle this request ' . ( (string) $uri ));
+                }
+            }
+        };
+
+        $handlerMapper = [
+            Dispatcher::NOT_FOUND => [
+                'methodName' => 'notFoundHandler',
+                'args' => [$uri],
+                'exceptionName' => 'NotFoundException'
+            ],
+            Dispatcher::METHOD_NOT_ALLOWED => [
+                'methodName' => 'forbidenMethodHandler',
+                'args' => [$uri],
+                'exceptionName' => 'MethodNotAllowedException'
+            ],
+            Dispatcher::FOUND => [
+                'methodName' => 'routerRoutine',
+                'args' => $this->dispatch_result
+            ]
+        ];
+
+        return $functionHandler($handlerMapper[$this->dispatch_result[0]]);
+
+    }
+
+    protected function routerRoutine($code, $identifier, $args)
+    {
+        $route = $this->getRoute($identifier);
+
+        array_walk_recursive($args, function (&$v){
+            $v = urldecode($v);
+        });
+
+        if ($route->hasMethod('run')) {
+            return $route->run($args);
+        } else {
+
+            return $route->setArgs($args);
         }
-
-
     }
 }

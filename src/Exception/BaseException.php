@@ -8,6 +8,7 @@ use \Psr\Http\Message\UriInterface;
 class BaseException extends Exception
 {
     protected $uri;
+    protected $message = ' Exception thrown';
 
     public function __construct(UriInterface $uri)
     {
@@ -18,5 +19,10 @@ class BaseException extends Exception
     public function getUri()
     {
         return $this->uri;
+    }
+
+    public function getMessage()
+    {
+        return ( (string) $this->uri ) . $this->message;
     }
 }

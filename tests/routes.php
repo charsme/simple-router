@@ -1,5 +1,7 @@
 <?php
 
 return [
-    '/{dev}' => 'Home/class'
+    '/{dev}' => function () {
+        echo '<br ><pre>I am routed';
+    }
 ];

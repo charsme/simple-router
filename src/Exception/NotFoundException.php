@@ -23,9 +23,4 @@ class NotFoundException extends BaseException
         }
     }
 
-    public function getMessage()
-    {
-        return ( (string) $this->uri ) . $this->message;
-    }
-
 }
