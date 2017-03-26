@@ -161,7 +161,7 @@ class Router implements RouteableInterface
             }
         };
 
-        $this->dispatcher = $this->routeDispatcher($routeDefinitionCallback, [
+        $this->dispatcher = $this->routeDispatcher ($routeDefinitionCallback, [
             'routeParser' => $this->parser,
         ]);
 
@@ -180,7 +180,7 @@ class Router implements RouteableInterface
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
                 if ($arg['methodName'] === $this->notFoundFuncName) {
-                    throw new BadMethodCallException('Method : '. ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
+                    throw new BadMethodCallException('Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
                 } elseif ($arg['methodName'] === $this->forbiddenFuncName) {
                     throw new BadMethodCallException(((string) $uri) . ' Not Available');
                 } else {

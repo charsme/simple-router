@@ -319,8 +319,8 @@ class Uri implements UriInterface
      * Filter allowable port to minimize risk
      *
      * @access protected
-     * @param mixed $port
-     * @return mixed $port
+     * @param integer|null $port
+     * @return null|integer $port
      * @throws InvalidArgumentException for incorrect port assigned
      */
     protected function filterPort($port)
@@ -337,7 +337,7 @@ class Uri implements UriInterface
      *
      * @access protected
      * @param string $path
-     * @return rawurlencode of cleared path
+     * @return string of cleared path
      */
     protected function filterPath($path)
     {
@@ -355,7 +355,7 @@ class Uri implements UriInterface
      *
      * @access protected
      * @param string $query
-     * @return rawurlencode of replaced query
+     * @return string of replaced query
      */
     protected function filterQuery($query)
     {
@@ -408,7 +408,7 @@ class Uri implements UriInterface
      * get Base Url
      *
      * @access public
-     * @return void
+     * @return string
      */
     public function getBaseUrl()
     {
@@ -430,7 +430,7 @@ class Uri implements UriInterface
      *
      * @access public
      * @static
-     * @return Resilient\Http\Uri
+     * @return Uri
      */
     public static function createFromServer($serv)
     {
