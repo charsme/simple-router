@@ -40,10 +40,9 @@ class Router implements RouteableInterface
     protected $notFoundHandler;
     protected $methodNotAllowedHandler;
 
-    public function __construct($parser, $routefor = 'App')
+    public function __construct($parser)
     {
         $this->parser = $parser ?: new StdParser;
-        $this->routefor = $routefor;
     }
 
     public function setDispatcher(Dispatcher $dispatcher)
@@ -190,6 +189,9 @@ class Router implements RouteableInterface
             }
         };
 
+        $code = array_shift($this->dispatch_result);
+        
+
         $handlerMapper = [
             Dispatcher::NOT_FOUND => [
                 'methodName' => $this->notFoundFuncName,
@@ -205,7 +207,7 @@ class Router implements RouteableInterface
             ]
         ];
 
-        return $functionHandler($handlerMapper[$this->dispatch_result[0]]);
+        return $functionHandler($handlerMapper[$code]);
     }
 
     public function whenNotFound(callable $callable)
@@ -222,7 +224,7 @@ class Router implements RouteableInterface
         return $this;
     }
 
-    protected function routerRoutine($code, $identifier, $args)
+    protected function routerRoutine($identifier, $args)
     {
         $route = $this->getRoute($identifier);
 

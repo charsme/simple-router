@@ -145,7 +145,7 @@ class Uri implements UriInterface
      */
     public function getPort()
     {
-        return $this->port && !$this->hasStandardPort() ? $this->port : null;
+        return $this->port !== null && !$this->hasStandardPort() ? $this->port : null;
     }
 
     /**
@@ -432,10 +432,8 @@ class Uri implements UriInterface
      * @static
      * @return Resilient\Http\Uri
      */
-    public static function createFromHeader()
+    public static function createFromServer($serv)
     {
-        $serv = $_SERVER;
-
         $scheme = isset($serv['HTTPS']) ? 'https://' : 'http://';
         $host = empty($serv['HTTP_HOST']) ? $serv['HTTP_HOST'] : $serv['SERVER_NAME'];
         $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
@@ -472,7 +470,7 @@ class Uri implements UriInterface
 
         $method = !empty($serv['REQUEST_METHOD']) ? $serv['REQUEST_METHOD'] : '';
 
-        $uri = new static($scheme, $host, $port, $path, $query, $fragment, $user, $password, $method);
+        $uri = new static($scheme, $host, $port, $path, $query, $fragment, $user, $password);
 
         if ($basePath) {
             $uri->withBasePath($basePath);

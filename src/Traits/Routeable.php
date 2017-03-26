@@ -38,4 +38,6 @@ trait Routeable
     {
         return $this->map(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $pattern, $handler);
     }
+    
+    abstract public function map($methods, string $pattern, $handler);
 }
