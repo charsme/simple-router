@@ -243,7 +243,7 @@ class Uri implements UriInterface
         if (!is_string($query) && !method_exists($query, '__toString')) {
             throw new InvalidArgumentException('Uri query must be a string');
         }
-        $query = ltrim((string)$query, '?');
+        $query = ltrim((string) $query, '?');
         $clone = clone $this;
         $clone->query = $this->filterQuery($query);
 
@@ -258,7 +258,7 @@ class Uri implements UriInterface
         if (!is_string($fragment) && !method_exists($fragment, '__toString')) {
             throw new InvalidArgumentException('Uri fragment must be a string');
         }
-        $fragment = ltrim((string)$fragment, '#');
+        $fragment = ltrim((string) $fragment, '#');
         $clone = clone $this;
         $clone->fragment = $this->filterQuery($fragment);
 
@@ -343,7 +343,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~:@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) {
+            function($match) {
                 return rawurlencode($match[0]);
             },
             $path
@@ -361,7 +361,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~!\$&\'\(\)\*\+,;=%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) {
+            function($match) {
                 return rawurlencode($match[0]);
             },
             $query
@@ -486,7 +486,7 @@ class Uri implements UriInterface
      * @access public
      * @static
      * @param string $uri
-     * @return Resilient\Http\Uri
+     * @return Uri
      */
     public static function createFromString(string $uri)
     {
