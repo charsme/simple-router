@@ -84,7 +84,7 @@ interface RouteableInterface
      * @param mixed $methods
      * @param string $pattern
      * @param mixed $handler
-     * @return Router
+     * @return Resilient\Router
      */
     public function map($methods, string $pattern, $handler);
 }
