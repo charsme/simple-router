@@ -162,7 +162,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param Dispatcher $dispatcher
-     * @return void
+     * @return Router
      */
     public function setDispatcher(Dispatcher $dispatcher)
     {
@@ -176,7 +176,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param CacheInterface $cacheEngine
-     * @return void
+     * @return Router
      */
     public function setCacheEngine(CacheInterface $cacheEngine)
     {
@@ -190,7 +190,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param int $cacheTtl
-     * @return void
+     * @return Router
      */
     public function setCacheTtl(int $cacheTtl)
     {
@@ -204,7 +204,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param string $cacheKey
-     * @return void
+     * @return Router
      */
     public function setCacheKey(string $cacheKey)
     {
@@ -241,7 +241,7 @@ class Router implements RouteableInterface
      * @access public
      * @param array $method
      * @param array $routes
-     * @return void
+     * @return Router
      */
     public function setRoutes(array $method, array $routes)
     {
@@ -298,7 +298,7 @@ class Router implements RouteableInterface
      * @param string $method
      * @param string $pattern
      * @param mixed $handler
-     * @return new Route
+     * @return Route Route
      */
     protected function createRoute(string $method, string $pattern, $handler)
     {
@@ -354,7 +354,7 @@ class Router implements RouteableInterface
             return $this->dispatcher;
         }
 
-        $routeDefinitionCallback = function (RouteCollector $r) {
+        $routeDefinitionCallback = function(RouteCollector $r) {
             foreach ($this->getRoutes() as $route) {
                 $r->addRoute($route->getMethod(), $route->getPattern(), $route->getIdentifier());
             }
@@ -382,7 +382,7 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        $functionHandler = function ($arg) use ($uri, $method) {
+        $functionHandler = function($arg) use ($uri, $method) {
             if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
@@ -422,7 +422,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param callable $callable
-     * @return void
+     * @return Router
      */
     public function whenNotFound(callable $callable)
     {
@@ -436,7 +436,7 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param callable $callable
-     * @return void
+     * @return Router
      */
     public function whenForbidden(callable $callable)
     {
