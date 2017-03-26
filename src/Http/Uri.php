@@ -255,7 +255,8 @@ class Uri implements UriInterface
      * withString function.
      * 
      * @access protected
-     * @param mixed $str
+     * @param string $string
+     * @param string $name (default: 'query')
      * @return Uri
      */
     protected function withString($string, $name = 'query')
@@ -263,7 +264,7 @@ class Uri implements UriInterface
         if (!is_string($string) && !method_exists($string, '__toString')) {
             throw new InvalidArgumentException('Uri fragment must be a string');
         }
-        $string = ltrim((string)$string, '#');
+        $string = ltrim((string) $string, '#');
         $clone = clone $this;
         $clone->$name = $this->filterQuery($string);
 

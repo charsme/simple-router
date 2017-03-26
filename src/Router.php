@@ -16,7 +16,7 @@ use \Psr\SimpleCache\CacheInterface;
 
 /**
  * Router class.
- * 
+ *
  * @implements RouteableInterface
  * @method callablce run()
  */
@@ -26,19 +26,19 @@ class Router implements RouteableInterface
 
     /**
      * notFoundFuncName
-     * 
+     *
      * (default value: 'notFoundHandler')
-     * 
+     *
      * @var string
      * @access protected
      */
     protected $notFoundFuncName = 'notFoundHandler';
-    
+
     /**
      * forbiddenFuncName
-     * 
+     *
      * (default value: 'forbidenMethodHandler')
-     * 
+     *
      * @var string
      * @access protected
      */
@@ -46,7 +46,7 @@ class Router implements RouteableInterface
 
     /**
      * dispatch_result
-     * 
+     *
      * @var mixed
      * @access protected
      */
@@ -54,9 +54,9 @@ class Router implements RouteableInterface
 
     /**
      * routes
-     * 
-     * (default value: [])
-     * 
+     *
+     * (default value: [])
+     *
      * @var mixed
      * @access protected
      */
@@ -64,17 +64,17 @@ class Router implements RouteableInterface
 
     /**
      * routeCount
-     * 
+     *
      * (default value: 0)
-     * 
+     *
      * @var int
      * @access protected
      */
     protected $routeCount = 0;
-    
+
     /**
      * routeGroup
-     * 
+     *
      * @var mixed
      * @access protected
      */
@@ -82,15 +82,15 @@ class Router implements RouteableInterface
 
     /**
      * parser
-     * 
+     *
      * @var mixed
      * @access protected
      */
     protected $parser;
-    
+
     /**
      * dispatcher
-     * 
+     *
      * @var mixed
      * @access protected
      */
@@ -98,27 +98,27 @@ class Router implements RouteableInterface
 
     /**
      * cacheEngine
-     * 
+     *
      * @var mixed
      * @access protected
      */
     protected $cacheEngine;
-    
+
     /**
      * cacheKey
-     * 
+     *
      * (default value: "{Resilient\Router}/router.cache")
-     * 
+     *
      * @var string
      * @access protected
      */
     protected $cacheKey = "{Resilient\Router}/router.cache";
-    
+
     /**
      * cacheTtl
-     * 
+     *
      * (default value: 86400)
-     * 
+     *
      * @var int
      * @access protected
      */
@@ -126,7 +126,7 @@ class Router implements RouteableInterface
 
     /**
      * apiHandler
-     * 
+     *
      * @var mixed
      * @access protected
      */
@@ -134,15 +134,15 @@ class Router implements RouteableInterface
 
     /**
      * notFoundHandler
-     * 
+     *
      * @var mixed
      * @access protected
      */
     protected $notFoundHandler;
-    
+
     /**
      * methodNotAllowedHandler
-     * 
+     *
      * @var mixed
      * @access protected
      */
@@ -150,7 +150,7 @@ class Router implements RouteableInterface
 
     /**
      * __construct function.
-     * 
+     *
      * @access public
      * @param mixed $parser
      */
@@ -161,7 +161,7 @@ class Router implements RouteableInterface
 
     /**
      * setDispatcher function.
-     * 
+     *
      * @access public
      * @param Dispatcher $dispatcher
      * @return Router
@@ -175,7 +175,7 @@ class Router implements RouteableInterface
 
     /**
      * setCacheEngine function.
-     * 
+     *
      * @access public
      * @param CacheInterface $cacheEngine
      * @return Router
@@ -189,7 +189,7 @@ class Router implements RouteableInterface
 
     /**
      * setCacheTtl function.
-     * 
+     *
      * @access public
      * @param int $cacheTtl
      * @return Router
@@ -203,7 +203,7 @@ class Router implements RouteableInterface
 
     /**
      * setCacheKey function.
-     * 
+     *
      * @access public
      * @param string $cacheKey
      * @return Router
@@ -216,7 +216,7 @@ class Router implements RouteableInterface
 
     /**
      * getRoute function.
-     * 
+     *
      * @access public
      * @param string $identifier
      * @return null|Route
@@ -228,7 +228,7 @@ class Router implements RouteableInterface
 
     /**
      * getRoutes function.
-     * 
+     *
      * @access public
      * @return array
      */
@@ -239,7 +239,7 @@ class Router implements RouteableInterface
 
     /**
      * setRoutes function.
-     * 
+     *
      * @access public
      * @param array $method
      * @param array $routes
@@ -256,7 +256,7 @@ class Router implements RouteableInterface
 
     /**
      * getResult function.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -266,13 +266,7 @@ class Router implements RouteableInterface
     }
 
     /**
-     * map function.
-     * 
-     * @access public
-     * @param mixed $method
-     * @param string $pattern
-     * @param mixed $handler
-     * @return Resilient\Design\RouteableInterface
+     * {@inheritdoc}
      */
     public function map($method, string $pattern, $handler)
     {
@@ -295,7 +289,7 @@ class Router implements RouteableInterface
 
     /**
      * createRoute function.
-     * 
+     *
      * @access protected
      * @param string $method
      * @param string $pattern
@@ -309,7 +303,7 @@ class Router implements RouteableInterface
 
     /**
      * routeDispatcher function.
-     * 
+     *
      * @access protected
      * @param callable $routeDefinitionCallback
      * @param array $options (default: [])
@@ -346,7 +340,7 @@ class Router implements RouteableInterface
 
     /**
      * createDispatcher function.
-     * 
+     *
      * @access protected
      * @return Dispatcher
      */
@@ -356,7 +350,7 @@ class Router implements RouteableInterface
             return $this->dispatcher;
         }
 
-        $routeDefinitionCallback = function(RouteCollector $r) {
+        $routeDefinitionCallback = function (RouteCollector $r) {
             foreach ($this->getRoutes() as $route) {
                 $r->addRoute($route->getMethod(), $route->getPattern(), $route->getIdentifier());
             }
@@ -371,7 +365,7 @@ class Router implements RouteableInterface
 
     /**
      * dispatch function.
-     * 
+     *
      * @access public
      * @param UriInterface $uri
      * @param string $method (default: 'GET')
@@ -384,7 +378,7 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        $functionHandler = function($arg) use ($uri, $method) {
+        $functionHandler = function ($arg) use ($uri, $method) {
             if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
@@ -399,7 +393,6 @@ class Router implements RouteableInterface
         };
 
         $code = array_shift($this->dispatch_result);
-        
 
         $handlerMapper = [
             Dispatcher::NOT_FOUND => [
@@ -421,7 +414,7 @@ class Router implements RouteableInterface
 
     /**
      * whenNotFound function.
-     * 
+     *
      * @access public
      * @param callable $callable
      * @return Router
@@ -435,7 +428,7 @@ class Router implements RouteableInterface
 
     /**
      * whenForbidden function.
-     * 
+     *
      * @access public
      * @param callable $callable
      * @return Router
@@ -449,7 +442,7 @@ class Router implements RouteableInterface
 
     /**
      * routerRoutine function.
-     * 
+     *
      * @access protected
      * @param mixed $identifier
      * @param mixed $args
