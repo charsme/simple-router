@@ -240,14 +240,7 @@ class Uri implements UriInterface
      */
     public function withQuery($query)
     {
-        if (!is_string($query) && !method_exists($query, '__toString')) {
-            throw new InvalidArgumentException('Uri query must be a string');
-        }
-        $query = ltrim((string)$query, '?');
-        $clone = clone $this;
-        $clone->query = $this->filterQuery($query);
-
-        return $clone;
+        return $this->withString($query);
     }
 
     /**
@@ -255,12 +248,24 @@ class Uri implements UriInterface
      */
     public function withFragment($fragment)
     {
-        if (!is_string($fragment) && !method_exists($fragment, '__toString')) {
+        return $this->withString($fragment, 'fragment');
+    }
+    
+    /**
+     * withString function.
+     * 
+     * @access protected
+     * @param mixed $str
+     * @return Uri
+     */
+    protected function withString($string, $name = 'query')
+    {
+        if (!is_string($string) && !method_exists($string, '__toString')) {
             throw new InvalidArgumentException('Uri fragment must be a string');
         }
-        $fragment = ltrim((string)$fragment, '#');
+        $string = ltrim((string)$string, '#');
         $clone = clone $this;
-        $clone->fragment = $this->filterQuery($fragment);
+        $clone->$name = $this->filterQuery($string);
 
         return $clone;
     }
@@ -439,10 +444,10 @@ class Uri implements UriInterface
         $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
 
         //Path
-        $scriptName = parse_url($_SERVER['SCRIPT_NAME'], PHP_URL_PATH);
+        $scriptName = parse_url($serv['SCRIPT_NAME'], PHP_URL_PATH);
         $scriptPath = dirname($scriptName);
 
-        $requestUri = parse_url('http://www.example.com/' . $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestUri = (string) parse_url('http://www.example.com/' . $_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         if (stripos($requestUri, $scriptName) === 0) {
             $basePath = $scriptName;
@@ -467,8 +472,6 @@ class Uri implements UriInterface
         if (empty($user) && empty($password) && !empty($serv['HTTP_AUTHORIZATION'])) {
             list($user, $password) = explode(':', base64_decode(substr($serv['HTTP_AUTHORIZATION'], 6)));
         }
-
-        $method = !empty($serv['REQUEST_METHOD']) ? $serv['REQUEST_METHOD'] : '';
 
         $uri = new static($scheme, $host, $port, $path, $query, $fragment, $user, $password);
 

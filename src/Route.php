@@ -65,7 +65,6 @@ class Route
      * @param mixed $handler
      * @param string $group (default: '')
      * @param string $identifier (default: '')
-     * @return void
      */
     public function __construct(string $method, string $pattern, $handler, $group = '', $identifier = '')
     {

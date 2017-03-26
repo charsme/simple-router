@@ -18,6 +18,7 @@ use \Psr\SimpleCache\CacheInterface;
  * Router class.
  * 
  * @implements RouteableInterface
+ * @method callablce run()
  */
 class Router implements RouteableInterface
 {
@@ -54,10 +55,12 @@ class Router implements RouteableInterface
     /**
      * routes
      * 
+     * (default value: [])
+     * 
      * @var mixed
      * @access protected
      */
-    protected $routes;
+    protected $routes = [];
 
     /**
      * routeCount
@@ -150,7 +153,6 @@ class Router implements RouteableInterface
      * 
      * @access public
      * @param mixed $parser
-     * @return void
      */
     public function __construct($parser)
     {
@@ -208,7 +210,7 @@ class Router implements RouteableInterface
      */
     public function setCacheKey(string $cacheKey)
     {
-        $this->cacheKey = !empty($this->routefor) ? $this->routefor . $cacheKey : $cacheKey;
+        $this->cacheKey = $cacheKey;
         return $this;
     }
 
@@ -228,7 +230,7 @@ class Router implements RouteableInterface
      * getRoutes function.
      * 
      * @access public
-     * @return void
+     * @return array
      */
     public function getRoutes()
     {
@@ -270,7 +272,7 @@ class Router implements RouteableInterface
      * @param mixed $method
      * @param string $pattern
      * @param mixed $handler
-     * @return $this
+     * @return Resilient\Design\RouteableInterface
      */
     public function map($method, string $pattern, $handler)
     {
