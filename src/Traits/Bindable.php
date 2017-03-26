@@ -3,6 +3,8 @@
 namespace Resilient\Traits;
 
 use Closure;
+use InvalidArgumentException;
+use RunTimeException;
 
 trait Bindable
 {
@@ -26,10 +28,15 @@ trait Bindable
 
     public function __call($name, array $args)
     {
-        if (isset($this->binded[$name])) {
-            return call_user_func_array($this->binded[$name], $args);
+        if ($this->hasMethod($name)) {
+            return $this->getBind($name, $args);
         }
 
-        throw RunTimeException('There is no method with the given name to call');
+        throw new RunTimeException('There is no method with the given name to call');
+    }
+
+    public function getBind($name, $args)
+    {
+        return $this->binded[$name](...$args);
     }
 }

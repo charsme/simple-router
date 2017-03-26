@@ -2,13 +2,11 @@
 
 namespace Resilient;
 
-use RunTimeException;
+use BadMethodCallException;
 use \Resilient\Route;
 use \Resilient\Design\RouteableInterface;
 use \Resilient\Traits\Routeable;
 use \Resilient\Traits\Bindable;
-use \Resilient\Exception\MethodNotAllowedException;
-use \Resilient\Exception\NotFoundException;
 use \FastRoute\Dispatcher;
 use \FastRoute\RouteCollector;
 use \FastRoute\RouteParser;
@@ -21,11 +19,12 @@ class Router implements RouteableInterface
 
     use Routeable, Bindable;
 
-    protected $routerName;
+    protected $notFoundFuncName = 'notFoundHandler';
+    protected $forbiddenFuncName = 'forbidenMethodHandler';
+
     protected $dispatch_result;
 
     protected $routes;
-
 
     protected $routeCount = 0;
     protected $routeGroup;
@@ -46,19 +45,6 @@ class Router implements RouteableInterface
     {
         $this->parser = $parser ?: new StdParser;
         $this->routefor = $routefor;
-    }
-
-    public function setApiHandler(callable $apiHandler)
-    {
-        $this->apiHandler = $apiHandler;
-
-        return $this;
-    }
-
-    public function setRouterName(string $name)
-    {
-        $this->routerName = $name;
-        return $this;
     }
 
     public function setDispatcher(Dispatcher $dispatcher)
@@ -100,9 +86,9 @@ class Router implements RouteableInterface
 
     public function setRoutes(array $method, array $routes)
     {
-        array_map(function ($pattern, $handler) use ($method) {
-            return $this->map($method, $pattern, $handler);
-        }, array_keys($routes), $routes);
+        foreach ($routes as $pattern => $handler) {
+            $this->map($method, $pattern, $handler);
+        }
 
         return $this;
     }
@@ -123,7 +109,7 @@ class Router implements RouteableInterface
 
             $this->routes[$route->getIdentifier()] = $route;
 
-            if (is_callable($handler)) {
+            if (is_callable ($handler)) {
                 $route->bind('run', $handler);
             }
         }
@@ -191,28 +177,28 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        $functionHandler = function ($arg) use ($uri) {
-            if (method_exists($this, $arg['methodName'])) {
+        $functionHandler = function ($arg) use ($uri, $method) {
+            if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
-                if (!empty($arg['exceptionName'])) {
-                    throw new $arg['exceptionName'](...$arg['args']);
+                if ( $arg['methodName'] === $this->notFoundFuncName ) {
+                    throw new BadMethodCallException('Method : '. ( (string) $method ) . ' ON uri : ' . ( (string) $uri) . ' Not Allowed');
+                } elseif ( $arg['methodName'] === $this->forbiddenFuncName ) {
+                    throw new BadMethodCallException(( (string) $uri) . ' Not Available');
                 } else {
-                    throw new RunTimeException('There is no method or exception to handle this request ' . ( (string) $uri ));
+                    throw new BadMethodCallException('There is no method or exception to handle this request ' . ( (string) $uri ));
                 }
             }
         };
 
         $handlerMapper = [
             Dispatcher::NOT_FOUND => [
-                'methodName' => 'notFoundHandler',
-                'args' => [$uri],
-                'exceptionName' => 'NotFoundException'
+                'methodName' => $this->notFoundFuncName,
+                'args' => [$uri]
             ],
             Dispatcher::METHOD_NOT_ALLOWED => [
-                'methodName' => 'forbidenMethodHandler',
-                'args' => [$uri],
-                'exceptionName' => 'MethodNotAllowedException'
+                'methodName' => $this->forbiddenFuncName,
+                'args' => [$method, $uri]
             ],
             Dispatcher::FOUND => [
                 'methodName' => 'routerRoutine',
@@ -224,18 +210,33 @@ class Router implements RouteableInterface
 
     }
 
+    public function whenNotFound(callable $callable)
+    {
+        $this->bind($this->notFoundFuncName, $callable);
+
+        return $this;
+    }
+
+    public function whenForbidden(callable $callable)
+    {
+        $this->bind($this->forbiddenFuncName, $callable);
+
+        return $this;
+    }
+
     protected function routerRoutine($code, $identifier, $args)
     {
         $route = $this->getRoute($identifier);
 
-        array_walk_recursive($args, function (&$v){
-            $v = urldecode($v);
-        });
+        if (!empty($args)) {
+            foreach ($args as &$v) {
+                $v = urldecode($v);
+            }
+        }
 
         if ($route->hasMethod('run')) {
             return $route->run($args);
         } else {
-
             return $route->setArgs($args);
         }
     }
