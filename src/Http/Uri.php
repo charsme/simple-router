@@ -348,7 +348,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~:@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) {
+            function($match) {
                 return rawurlencode($match[0]);
             },
             $path
@@ -366,7 +366,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~!\$&\'\(\)\*\+,;=%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) {
+            function($match) {
                 return rawurlencode($match[0]);
             },
             $query
@@ -489,7 +489,7 @@ class Uri implements UriInterface
      * @access public
      * @static
      * @param string $uri
-     * @return Resilient\Http\Uri
+     * @return Uri
      */
     public static function createFromString(string $uri)
     {
