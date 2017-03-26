@@ -16,7 +16,6 @@ use \Psr\SimpleCache\CacheInterface;
 
 class Router implements RouteableInterface
 {
-
     use Routeable, Bindable;
 
     protected $notFoundFuncName = 'notFoundHandler';
@@ -109,7 +108,7 @@ class Router implements RouteableInterface
 
             $this->routes[$route->getIdentifier()] = $route;
 
-            if (is_callable ($handler)) {
+            if (is_callable($handler)) {
                 $route->bind('run', $handler);
             }
         }
@@ -181,12 +180,12 @@ class Router implements RouteableInterface
             if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
-                if ( $arg['methodName'] === $this->notFoundFuncName ) {
-                    throw new BadMethodCallException('Method : '. ( (string) $method ) . ' ON uri : ' . ( (string) $uri) . ' Not Allowed');
-                } elseif ( $arg['methodName'] === $this->forbiddenFuncName ) {
-                    throw new BadMethodCallException(( (string) $uri) . ' Not Available');
+                if ($arg['methodName'] === $this->notFoundFuncName) {
+                    throw new BadMethodCallException('Method : '. ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
+                } elseif ($arg['methodName'] === $this->forbiddenFuncName) {
+                    throw new BadMethodCallException(((string) $uri) . ' Not Available');
                 } else {
-                    throw new BadMethodCallException('There is no method or exception to handle this request ' . ( (string) $uri ));
+                    throw new BadMethodCallException('There is no method or exception to handle this request ' . ((string) $uri));
                 }
             }
         };
@@ -207,7 +206,6 @@ class Router implements RouteableInterface
         ];
 
         return $functionHandler($handlerMapper[$this->dispatch_result[0]]);
-
     }
 
     public function whenNotFound(callable $callable)

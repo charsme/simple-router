@@ -94,7 +94,6 @@ class Uri implements UriInterface
         $user = '',
         $password = ''
     ) {
-
         $this->scheme = $this->filterScheme($scheme);
         $this->host = $host;
         $this->port = $this->filterPort($port);

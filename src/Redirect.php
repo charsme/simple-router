@@ -4,5 +4,4 @@ namespace Resilient;
 
 class Redirect
 {
-    
 }
