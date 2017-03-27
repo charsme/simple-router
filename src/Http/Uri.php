@@ -432,7 +432,7 @@ class Uri implements UriInterface
     }
 
     /**
-     * Create uri Instance from header $_SERVER.
+     * Create uri Instance from header.
      *
      * @access public
      * @static
@@ -448,7 +448,7 @@ class Uri implements UriInterface
         $scriptName = parse_url($serv['SCRIPT_NAME'], PHP_URL_PATH);
         $scriptPath = dirname($scriptName);
 
-        $requestUri = (string) parse_url('http://www.example.com/' . $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestUri = (string) parse_url('http://www.example.com/' . $serv['REQUEST_URI'], PHP_URL_PATH);
 
         if (stripos($requestUri, $scriptName) === 0) {
             $basePath = $scriptName;
