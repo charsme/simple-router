@@ -7,8 +7,6 @@ use \Psr\Http\Message\UriInterface;
 
 class Uri implements UriInterface
 {
-
-
     /**
      * Uri scheme (without "://" suffix)
      *
@@ -43,13 +41,6 @@ class Uri implements UriInterface
      * @var null|int
      */
     protected $port;
-
-    /**
-     * Uri base path
-     *
-     * @var string
-     */
-    protected $basePath = '';
 
     /**
      * Uri path
@@ -227,11 +218,6 @@ class Uri implements UriInterface
         $clone = clone $this;
         $clone->path = $this->filterPath($path);
 
-        // if the path is absolute, then clear basePath
-        if (substr($path, 0, 1) == '/') {
-            $clone->basePath = '';
-        }
-
         return $clone;
     }
 
@@ -253,7 +239,7 @@ class Uri implements UriInterface
     
     /**
      * withString function.
-     * 
+     *
      * @access protected
      * @param string $string
      * @param string $name (default: 'query')
@@ -278,12 +264,11 @@ class Uri implements UriInterface
     {
         $scheme = $this->getScheme();
         $authority = $this->getAuthority();
-        $basePath = $this->getBasePath();
         $path = $this->getPath();
         $query = $this->getQuery();
         $fragment = $this->getFragment();
 
-        $path = $basePath . '/' . ltrim($path, '/');
+        $path = '/' . ltrim($path, '/');
 
         return ($scheme ? $scheme . ':' : '')
             . ($authority ? '//' . $authority : '')
@@ -349,7 +334,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~:@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
-            function($match) {
+            function ($match) {
                 return rawurlencode($match[0]);
             },
             $path
@@ -367,7 +352,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^a-zA-Z0-9_\-\.~!\$&\'\(\)\*\+,;=%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            function($match) {
+            function ($match) {
                 return rawurlencode($match[0]);
             },
             $query
@@ -385,31 +370,6 @@ class Uri implements UriInterface
         return ($this->scheme === 'http' && $this->port === 80) || ($this->scheme === 'https' && $this->port === 443);
     }
 
-
-    /**
-     * get BasePath property.
-     *
-     * @access public
-     * @return string basePath
-     */
-    public function getBasePath()
-    {
-        return $this->basePath;
-    }
-
-    /**
-     * Set BasePath Function to rewrite request.
-     *
-     * @access public
-     * @param string $basePath
-     * @return void
-     */
-    public function withBasePath(string $basePath)
-    {
-        $this->basePath = $basePath;
-    }
-
-
     /**
      * get Base Url
      *
@@ -420,90 +380,8 @@ class Uri implements UriInterface
     {
         $scheme = $this->getScheme();
         $authority = $this->getAuthority();
-        $basePath = $this->getBasePath();
-
-        if ($authority && substr($basePath, 0, 1) !== '/') {
-            $basePath = $basePath . '/' . $basePath;
-        }
 
         return ($scheme ? $scheme . ':' : '')
-            . ($authority ? '//' . $authority : '')
-            . rtrim($basePath, '/');
-    }
-
-    /**
-     * Create uri Instance from header.
-     *
-     * @access public
-     * @static
-     * @return Uri
-     */
-    public static function createFromServer($serv)
-    {
-        $scheme = isset($serv['HTTPS']) ? 'https://' : 'http://';
-        $host = empty($serv['HTTP_HOST']) ? $serv['HTTP_HOST'] : $serv['SERVER_NAME'];
-        $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
-
-        //Path
-        $scriptName = parse_url($serv['SCRIPT_NAME'], PHP_URL_PATH);
-        $scriptPath = dirname($scriptName);
-
-        $requestUri = (string) parse_url('http://www.example.com/' . $serv['REQUEST_URI'], PHP_URL_PATH);
-
-        if (stripos($requestUri, $scriptName) === 0) {
-            $basePath = $scriptName;
-        } elseif ($scriptPath !== '/' && stripos($requestUri, $scriptPath) === 0) {
-            $basePath = $scriptPath;
-        }
-
-        if (empty($basePath)) {
-            $path = $requestUri;
-            $basePath = '';
-        } else {
-            $path = ltrim(substr($requestUri, strlen($basePath)), '/');
-        }
-
-        $query = empty($serv['QUERY_STRING']) ? parse_url('http://example.com' . $serv['REQUEST_URI'], PHP_URL_QUERY) : $serv['QUERY_STRING'];
-
-        $fragment = '';
-
-        $user = !empty($serv['PHP_AUTH_USER']) ? $serv['PHP_AUTH_USER'] : '';
-        $password = !empty($serv['PHP_AUTH_PW']) ? $serv['PHP_AUTH_PW'] : '';
-
-        if (empty($user) && empty($password) && !empty($serv['HTTP_AUTHORIZATION'])) {
-            list($user, $password) = explode(':', base64_decode(substr($serv['HTTP_AUTHORIZATION'], 6)));
-        }
-
-        $uri = new static($scheme, $host, $port, $path, $query, $fragment, $user, $password);
-
-        if ($basePath) {
-            $uri->withBasePath($basePath);
-        }
-
-        return $uri;
-    }
-
-
-    /**
-     * Create Uri Instance from string http://www.example.com/url/path.html
-     *
-     * @access public
-     * @static
-     * @param string $uri
-     * @return Uri
-     */
-    public static function createFromString(string $uri)
-    {
-        $parts = parse_url($uri);
-        $scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
-        $user = isset($parts['user']) ? $parts['user'] : '';
-        $pass = isset($parts['pass']) ? $parts['pass'] : '';
-        $host = isset($parts['host']) ? $parts['host'] : '';
-        $port = isset($parts['port']) ? $parts['port'] : null;
-        $path = isset($parts['path']) ? $parts['path'] : '';
-        $query = isset($parts['query']) ? $parts['query'] : '';
-        $fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
-
-        return new static($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
+            . ($authority ? '//' . $authority : '');
     }
 }

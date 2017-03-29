@@ -18,7 +18,7 @@ use \Psr\SimpleCache\CacheInterface;
  * Router class.
  *
  * @implements RouteableInterface
- * @method callablce run()
+ * @method callable run(array $args)
  */
 class Router implements RouteableInterface
 {
@@ -350,7 +350,7 @@ class Router implements RouteableInterface
             return $this->dispatcher;
         }
 
-        $routeDefinitionCallback = function(RouteCollector $r) {
+        $routeDefinitionCallback = function (RouteCollector $r) {
             foreach ($this->getRoutes() as $route) {
                 $r->addRoute($route->getMethod(), $route->getPattern(), $route->getIdentifier());
             }
@@ -378,7 +378,7 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        $functionHandler = function($arg) use ($uri, $method) {
+        $functionHandler = function ($arg) use ($uri, $method) {
             if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {

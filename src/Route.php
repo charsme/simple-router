@@ -4,6 +4,11 @@ namespace Resilient;
 
 use \Resilient\Traits\Bindable;
 
+/**
+ * Route class
+ *
+ * @method callable run(array $args)
+*/
 class Route
 {
     use Bindable;

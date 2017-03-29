@@ -3,6 +3,7 @@
 namespace Resilient;
 
 use \Resilient\Http\Uri;
+use \Resilient\Factory\Uri as UriFactory;
 use BadMethodCallException;
 
 class RouterTest extends \PHPUnit\Framework\TestCase
@@ -22,12 +23,12 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
     public function testGET()
     {
-        $uri = Uri::createFromString('http://www.example.com/test');
+        $uri = UriFactory::createFromString('http://www.example.com/test');
         $result = $this->router->dispatch($uri);
 
         $this->assertEquals('routed', $result);
 
-        $uri = Uri::createFromString('http://www.example.com/');
+        $uri = UriFactory::createFromString('http://www.example.com/');
         $result = $this->router->dispatch($uri);
 
         $this->assertInstanceOf('Resilient\Route', $result);
@@ -35,7 +36,7 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
     public function testArgumentCheck()
     {
-        $uri = Uri::createFromString('http://www.example.com/test/156');
+        $uri = UriFactory::createFromString('http://www.example.com/test/156');
         $result = $this->router->dispatch($uri);
 
         $this->assertEquals(2, count($result->getArgs()));
@@ -46,13 +47,13 @@ class RouterTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(BadMethodCallException::class);
 
-        $uri = Uri::createFromString('http://www.example.com/not/exist/path');
+        $uri = UriFactory::createFromString('http://www.example.com/not/exist/path');
         $result = $this->router->dispatch($uri);
     }
 
     public function testNotFoundHandler()
     {
-        $uri = Uri::createFromString('http://www.example.com/not/exist/path');
+        $uri = UriFactory::createFromString('http://www.example.com/not/exist/path');
 
         $this->router->whenNotFound(function ($arg) {
             return $arg;
@@ -67,13 +68,13 @@ class RouterTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(BadMethodCallException::class);
 
-        $uri = Uri::createFromString('http://www.example.com/');
+        $uri = UriFactory::createFromString('http://www.example.com/');
         $result = $this->router->dispatch($uri, 'PUT');
     }
 
     public function testForbiddenHandler()
     {
-        $uri = Uri::createFromString('http://www.example.com/');
+        $uri = UriFactory::createFromString('http://www.example.com/');
 
         $this->router->whenForbidden(function ($method, $uri) {
             return $uri;
@@ -88,7 +89,7 @@ class RouterTest extends \PHPUnit\Framework\TestCase
     {
         $_POST = ['vars' => 'come', 'input' => ['test' => 'text']];
 
-        $uri = Uri::createFromString('http://www.example.com/api');
+        $uri = UriFactory::createFromString('http://www.example.com/api');
         $result = $this->router->dispatch($uri, 'POST');
 
         $this->assertEquals($_POST, $result);
@@ -96,7 +97,7 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
     public function testClassInvokeable()
     {
-        $uri = Uri::createFromString('http://www.example.com/kerap/254');
+        $uri = UriFactory::createFromString('http://www.example.com/kerap/254');
         $result = $this->router->dispatch($uri, 'POST');
 
         $this->assertEquals(DummyController::class, $result->getHandler());
@@ -109,7 +110,7 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
     public function testClassInvokeable2()
     {
-        $uri = Uri::createFromString('http://www.example.com/jeng');
+        $uri = UriFactory::createFromString('http://www.example.com/jeng');
         $result = $this->router->dispatch($uri, 'POST');
 
         $this->assertEquals(DummyController::class, $result->getHandler());
