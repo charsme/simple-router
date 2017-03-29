@@ -268,8 +268,6 @@ class Uri implements UriInterface
         $query = $this->getQuery();
         $fragment = $this->getFragment();
 
-        $path = '/' . ltrim($path, '/');
-
         return ($scheme ? $scheme . ':' : '')
             . ($authority ? '//' . $authority : '')
             . $path

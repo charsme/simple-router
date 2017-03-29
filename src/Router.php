@@ -384,14 +384,6 @@ class Router implements RouteableInterface
             $uri->getPath()
         );
 
-        $functionHandler = function ($arg) use ($uri, $method) {
-            if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
-                return $this->{$arg['methodName']}(...$arg['args']);
-            } else {
-                return $this->handleException($arg['methodName'], $uri, $method);
-            }
-        };
-
         $code = array_shift($this->dispatch_result);
         
         $handlerMapper = [
@@ -408,11 +400,15 @@ class Router implements RouteableInterface
                 'args' => $this->dispatch_result
             ]
         ];
+        
+        $handler = $handlerMapper[$code];
 
-        return $functionHandler($handlerMapper[$code]);
+        return (method_exists($this, $handler['methodName']) || $this->hasMethod($handler['methodName'])) ?
+                $this->{$handler['methodName']}(...$handler['args']) :
+                $this->handleException($handler['methodName'], $uri, $method);
     }
     
-    protected function handleException($exception, $uri, $method)
+    protected function handleException(string $exception, $uri, $method)
     {
         if ($exception === $this->notFoundFuncName) {
             throw new BadMethodCallException('Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
@@ -421,8 +417,6 @@ class Router implements RouteableInterface
         } else {
             throw new BadMethodCallException('There is no method or exception to handle this request ' . ((string) $uri));
         }
-        
-        return null;
     }
 
     /**
