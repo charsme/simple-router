@@ -71,7 +71,7 @@ class Route
      * @param string $group (default: '')
      * @param string $identifier (default: '')
      */
-    public function __construct(string $method, string $pattern, $handler, $group = '', $identifier = '')
+    public function __construct (string $method, string $pattern, $handler, $group = '', $identifier = '')
     {
         $this->method = $method;
         $this->pattern = $pattern;
@@ -86,7 +86,7 @@ class Route
      * @access public
      * @return string
      */
-    public function getMethod()
+    public function getMethod ()
     {
         return $this->method;
     }
@@ -98,7 +98,7 @@ class Route
      * @param string $method
      * @return $this
      */
-    public function setMethod(string $method)
+    public function setMethod (string $method)
     {
         $this->method = $method;
         return $this;
@@ -110,7 +110,7 @@ class Route
      * @access public
      * @return string
      */
-    public function getPattern()
+    public function getPattern ()
     {
         return $this->pattern;
     }
@@ -122,7 +122,7 @@ class Route
      * @param string $pattern
      * @return $this
      */
-    public function setPattern(string $pattern)
+    public function setPattern (string $pattern)
     {
         $this->pattern = $pattern;
         return $this;
@@ -134,7 +134,7 @@ class Route
      * @access public
      * @return callable|string
      */
-    public function getHandler()
+    public function getHandler ()
     {
         return $this->handler;
     }
@@ -147,7 +147,7 @@ class Route
      * @param string $handler
      * @return $this
      */
-    public function setHandler(string $handler)
+    public function setHandler (string $handler)
     {
         $this->handler = $handler;
 
@@ -160,7 +160,7 @@ class Route
      * @access public
      * @return array
      */
-    public function getGroup()
+    public function getGroup ()
     {
         return $this->group;
     }
@@ -172,7 +172,7 @@ class Route
      * @param string $group
      * @return $this
      */
-    public function setGroup(string $group)
+    public function setGroup (string $group)
     {
         $this->group = $group;
 
@@ -185,7 +185,7 @@ class Route
      * @access public
      * @return string
      */
-    public function getIdentifier()
+    public function getIdentifier ()
     {
         return $this->identifier;
     }
@@ -197,7 +197,7 @@ class Route
      * @param string $identifier
      * @return $this
      */
-    public function setIdentifier(string $identifier)
+    public function setIdentifier (string $identifier)
     {
         $this->identifier = $identifier;
 
@@ -211,7 +211,7 @@ class Route
      * @param mixed $args
      * @return $this
      */
-    public function setArgs($args)
+    public function setArgs ($args)
     {
         $this->args = $args;
 
@@ -224,7 +224,7 @@ class Route
      * @access public
      * @return array
      */
-    public function getArgs()
+    public function getArgs ()
     {
         return $this->args;
     }
