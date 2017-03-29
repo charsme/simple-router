@@ -317,25 +317,31 @@ class Router implements RouteableInterface
             'dispatcher' => 'FastRoute\\Dispatcher\\GroupCountBased',
             'routeCollector' => 'FastRoute\\RouteCollector'
         ];
-
+        
+        $dispatchDataRunner = function () use ($routeDefinitionCallback, $options) {
+            $routeCollector = new $options['routeCollector'](
+                new $options['routeParser'], new $options['dataGenerator']
+            );
+            $routeDefinitionCallback($routeCollector);
+    
+            return $routeCollector->getData();
+        };
+        
         if (!empty($this->cacheEngine) && !empty($this->cacheKey)) {
-            $dispatchData = $this->cacheEngine->get($this->cacheKey);
-            if (!is_array($dispatchData)) {
+            if ($this->cacheEngine->has($this->cacheKey)) {
+                $dispatchData = $this->cacheEngine->get($this->cacheKey);
+                
                 return new $options['dispatcher']($dispatchData);
+            } else {
+                $dispatchData = $dispatchDataRunner();
+                $this->cacheEngine->set($this->cacheKey, $dispatchData, $this->cacheTtl);
+                
+                return $dispatchData;
             }
+        } else {
+            return new $options['dispatcher']($dispatchDataRunner());
         }
-
-        $routeCollector = new $options['routeCollector'](
-            new $options['routeParser'], new $options['dataGenerator']
-        );
-        $routeDefinitionCallback($routeCollector);
-
-        $dispatchData = $routeCollector->getData();
-        if (!empty($this->cacheEngine) && !empty($this->cacheKey)) {
-            $dispatchData = $this->cacheEngine->set($this->cacheKey, $dispatchData, $this->cacheTtl);
-        }
-
-        return new $options['dispatcher']($dispatchData);
+        
     }
 
     /**
@@ -382,26 +388,20 @@ class Router implements RouteableInterface
             if (method_exists($this, $arg['methodName']) || $this->hasMethod($arg['methodName'])) {
                 return $this->{$arg['methodName']}(...$arg['args']);
             } else {
-                if ($arg['methodName'] === $this->notFoundFuncName) {
-                    throw new BadMethodCallException('Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
-                } elseif ($arg['methodName'] === $this->forbiddenFuncName) {
-                    throw new BadMethodCallException(((string) $uri) . ' Not Available');
-                } else {
-                    throw new BadMethodCallException('There is no method or exception to handle this request ' . ((string) $uri));
-                }
+                return $this->handleException($arg['methodName'], $uri, $method);
             }
         };
 
         $code = array_shift($this->dispatch_result);
-
+        
         $handlerMapper = [
             Dispatcher::NOT_FOUND => [
                 'methodName' => $this->notFoundFuncName,
-                'args' => [$uri]
+                'args' => [$uri, $method]
             ],
             Dispatcher::METHOD_NOT_ALLOWED => [
                 'methodName' => $this->forbiddenFuncName,
-                'args' => [$method, $uri]
+                'args' => [$uri, $method]
             ],
             Dispatcher::FOUND => [
                 'methodName' => 'routerRoutine',
@@ -410,6 +410,19 @@ class Router implements RouteableInterface
         ];
 
         return $functionHandler($handlerMapper[$code]);
+    }
+    
+    protected function handleException($exception, $uri, $method)
+    {
+        if ($exception === $this->notFoundFuncName) {
+            throw new BadMethodCallException('Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
+        } elseif ($exception === $this->forbiddenFuncName) {
+            throw new BadMethodCallException(((string) $uri) . ' Not Available');
+        } else {
+            throw new BadMethodCallException('There is no method or exception to handle this request ' . ((string) $uri));
+        }
+        
+        return null;
     }
 
     /**

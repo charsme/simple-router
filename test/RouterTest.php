@@ -76,7 +76,7 @@ class RouterTest extends \PHPUnit\Framework\TestCase
     {
         $uri = UriFactory::createFromString('http://www.example.com/');
 
-        $this->router->whenForbidden(function ($method, $uri) {
+        $this->router->whenForbidden(function ($uri, $method) {
             return $uri;
         });
 

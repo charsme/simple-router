@@ -3,7 +3,6 @@
 namespace Resilient\Factory;
 
 use InvalidArgumentException;
-use Resilient\Http\Uri as UriItem;
 use \Psr\Http\Message\UriInterface;
 
 class Uri
@@ -13,17 +12,13 @@ class Uri
      *
      * @access public
      * @static
-     * @return Uri
+     * @return Resilient\Http\Uri
      */
     public static function createFromServer($serv)
     {
         $scheme = isset($serv['HTTPS']) ? 'https://' : 'http://';
         $host = !empty($serv['HTTP_HOST']) ? $serv['HTTP_HOST'] : $serv['SERVER_NAME'];
         $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
-
-        //Path
-        $scriptName = parse_url($serv['SCRIPT_NAME'], PHP_URL_PATH);
-        $scriptPath = dirname($scriptName);
 
         $path = (string) parse_url('http://www.example.com/' . $serv['REQUEST_URI'], PHP_URL_PATH);
 
@@ -38,7 +33,7 @@ class Uri
             list($user, $password) = explode(':', base64_decode(substr($serv['HTTP_AUTHORIZATION'], 6)));
         }
 
-        $uri = new UriItem($scheme, $host, $port, $path, $query, $fragment, $user, $password);
+        $uri = new \Resilient\Http\Uri($scheme, $host, $port, $path, $query, $fragment, $user, $password);
 
         return $uri;
     }
@@ -50,7 +45,7 @@ class Uri
      * @access public
      * @static
      * @param string $uri
-     * @return Uri
+     * @return Resilient\Http\Uri
      */
     public static function createFromString(string $uri)
     {
@@ -64,6 +59,6 @@ class Uri
         $query = isset($parts['query']) ? $parts['query'] : '';
         $fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
 
-        return new UriItem($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
+        return new \Resilient\Http\Uri($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
     }
 }
