@@ -1,5 +1,7 @@
 {
     "name": "chars/simple-router",
+    "description": "Simple routing management built on top nikic/FastRoute with caching option",
+    "type": "library",
     "authors": [
         {
             "name": "Charis",
@@ -16,7 +18,7 @@
     "require-dev": {
         "phpunit/phpunit": "~6.0@stable"
     },
-
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Resilient\\": "src"
@@ -24,5 +26,6 @@
     },
     "suggest": {
         "symfony/cache": "PSR16 Cache Interface Implementation for routes caching"
-    }
+    },
+    "minimum-stability": "stable"
 }

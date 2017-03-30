@@ -2,7 +2,7 @@ composer.phar
 /vendor/
 composer.lock
 *.cache
-.DS_Store
 *.ignore
 *.log
 *.esproj
+.DS_Store
