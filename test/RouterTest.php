@@ -2,6 +2,7 @@
 
 namespace Resilient;
 
+use \Resilient\Route;
 use \Resilient\Http\Uri;
 use \Resilient\Factory\Uri as UriFactory;
 use BadMethodCallException;
@@ -11,6 +12,12 @@ class RouterTest extends \PHPUnit\Framework\TestCase
     protected $routes;
     protected $router;
 
+    /**
+     * @covers Router::__construct
+     * @covers Router::setRoutes
+     * @covers Router::createRoute
+     * @covers Router::map
+     */
     public function __construct()
     {
         $this->routes = require 'routes.php';
@@ -21,6 +28,33 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    /**
+     * @covers Router::get
+     * @covers Router::post
+     * @covers Router::put
+     * @covers Router::map
+     * @covers Router::getRoutes
+     */
+    public function testRoutable()
+    {
+        $router = new Router(null);
+
+        foreach ($this->routes as $method => $routes) {
+            $meth = strtolower($method);
+            foreach ($routes as $pattern => $handler) {
+                $router->$meth($pattern, $handler);
+            }
+        }
+
+        $this->assertEquals($this->router->getRoutes(), $router->getRoutes());
+    }
+
+    /**
+     * @covers Router::dispatch
+     * @covers UriFactory::createFromString
+     * $covers Router::createDispatcher
+     * $covers Router::routeDispatcher
+     */
     public function testGET()
     {
         $uri = UriFactory::createFromString('http://www.example.com/test');
@@ -34,6 +68,10 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('Resilient\Route', $result);
     }
 
+    /**
+     * @covers Route::getArgs
+     * @covers Route::__construct
+     */
     public function testArgumentCheck()
     {
         $uri = UriFactory::createFromString('http://www.example.com/test/156');
@@ -43,6 +81,9 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('156', $result->getArgs()['id']);
     }
 
+    /**
+     * @covers Router::handleException
+     */
     public function testNotFound()
     {
         $this->expectException(BadMethodCallException::class);
@@ -51,6 +92,11 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $result = $this->router->dispatch($uri);
     }
 
+    /**
+     * @covers Router::whenNotFound
+     * @covers Router::bind
+     * @covers Router::run
+     */
     public function testNotFoundHandler()
     {
         $uri = UriFactory::createFromString('http://www.example.com/not/exist/path');
@@ -64,14 +110,21 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($uri, $result);
     }
 
+    /**
+     * @covers Router::handleException
+     */
     public function testForbiddenMethod()
     {
         $this->expectException(BadMethodCallException::class);
 
         $uri = UriFactory::createFromString('http://www.example.com/');
-        $result = $this->router->dispatch($uri, 'PUT');
+        $result = $this->router->dispatch($uri, 'DELETE');
     }
 
+    /**
+     * @covers Router::whenForbidden
+     * @covers Router::run
+     */
     public function testForbiddenHandler()
     {
         $uri = UriFactory::createFromString('http://www.example.com/');
@@ -85,6 +138,10 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($uri, $result);
     }
 
+    /**
+     * @covers Router::routerRoutine
+     * @covers Router::run
+     */
     public function testPOST()
     {
         $_POST = ['vars' => 'come', 'input' => ['test' => 'text']];
@@ -95,6 +152,9 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($_POST, $result);
     }
 
+    /**
+     * @covers Route::getHandler
+     */
     public function testClassInvokeable()
     {
         $uri = UriFactory::createFromString('http://www.example.com/kerap/254');
@@ -108,6 +168,9 @@ class RouterTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(DummyController::class, $invoke($result->getArgs()));
     }
 
+    /**
+     * @covers Route::getHandler
+     */
     public function testClassInvokeable2()
     {
         $uri = UriFactory::createFromString('http://www.example.com/jeng');

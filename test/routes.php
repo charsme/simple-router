@@ -15,5 +15,10 @@ return [
             return $_POST;
         },
         '/{name}[/{point}]' => DummyController::class
+    ],
+    'PUT' => [
+        '/put' => function () {
+            return $_REQUEST;
+        }
     ]
 ];
