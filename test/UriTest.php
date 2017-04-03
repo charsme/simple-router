@@ -3,13 +3,13 @@
 namespace Resilient;
 
 use \Resilient\Http\Uri;
-use \Resilient\Factory\Uri as UriFactory;
+use \Resilient\Factory\Uri as FactoryUri;
 use BadMethodCallException;
 
 class UriTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @covers UriFactory::createFromString
+     * @covers FactoryUri::createFromString
      * @covers Uri::getScheme
      * @covers Uri::getUserInfo
      * @covers Uri::getHost
@@ -37,7 +37,7 @@ class UriTest extends \PHPUnit\Framework\TestCase
     {
         $string = 'https://username:password@www.example.com:85/kerap/254?page=1#idkomentar';
 
-        $uri = UriFactory::createFromString($string);
+        $uri = FactoryUri::createFromString($string);
 
         $this->assertInstanceOf(Uri::class, $uri);
 

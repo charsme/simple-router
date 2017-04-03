@@ -14,15 +14,15 @@ class Uri
      * @static
      * @return Resilient\Http\Uri
      */
-    public static function createFromServer ($serv)
+    public static function createFromServer($serv)
     {
         $scheme = isset($serv['HTTPS']) ? 'https://' : 'http://';
         $host = !empty($serv['HTTP_HOST']) ? $serv['HTTP_HOST'] : $serv['SERVER_NAME'];
         $port = empty($serv['SERVER_PORT']) ? $serv['SERVER_PORT'] : null;
 
-        $path = (string) parse_url ('http://www.example.com/' . $serv['REQUEST_URI'], PHP_URL_PATH);
+        $path = (string) parse_url('http://www.example.com/' . $serv['REQUEST_URI'], PHP_URL_PATH);
 
-        $query = empty($serv['QUERY_STRING']) ? parse_url ('http://example.com' . $serv['REQUEST_URI'], PHP_URL_QUERY) : $serv['QUERY_STRING'];
+        $query = empty($serv['QUERY_STRING']) ? parse_url('http://example.com' . $serv['REQUEST_URI'], PHP_URL_QUERY) : $serv['QUERY_STRING'];
 
         $fragment = '';
 
@@ -30,10 +30,10 @@ class Uri
         $password = !empty($serv['PHP_AUTH_PW']) ? $serv['PHP_AUTH_PW'] : '';
 
         if (empty($user) && empty($password) && !empty($serv['HTTP_AUTHORIZATION'])) {
-            list($user, $password) = explode (':', base64_decode (substr ($serv['HTTP_AUTHORIZATION'], 6)));
+            list($user, $password) = explode(':', base64_decode(substr($serv['HTTP_AUTHORIZATION'], 6)));
         }
 
-        $uri = new \Resilient\Http\Uri ($scheme, $host, $port, $path, $query, $fragment, $user, $password);
+        $uri = new \Resilient\Http\Uri($scheme, $host, $port, $path, $query, $fragment, $user, $password);
 
         return $uri;
     }
@@ -47,9 +47,9 @@ class Uri
      * @param string $uri
      * @return Resilient\Http\Uri
      */
-    public static function createFromString (string $uri)
+    public static function createFromString(string $uri)
     {
-        $parts = parse_url ($uri);
+        $parts = parse_url($uri);
         $scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
         $user = isset($parts['user']) ? $parts['user'] : '';
         $pass = isset($parts['pass']) ? $parts['pass'] : '';
@@ -59,6 +59,6 @@ class Uri
         $query = isset($parts['query']) ? $parts['query'] : '';
         $fragment = isset($parts['fragment']) ? $parts['fragment'] : '';
 
-        return new \Resilient\Http\Uri ($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
+        return new \Resilient\Http\Uri($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
     }
 }

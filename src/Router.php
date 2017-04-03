@@ -12,7 +12,7 @@ use \FastRoute\RouteCollector;
 use \FastRoute\RouteParser;
 use \FastRoute\RouteParser\Std as StdParser;
 use \Psr\Http\Message\UriInterface;
-use \Psr\SimpleCache\CacheInterface;
+use \Psr\SimpleCache\CacheItemPoolInterface;
 
 /**
  * Router class.
@@ -97,12 +97,12 @@ class Router implements RouteableInterface
     protected $dispatcher;
 
     /**
-     * cacheEngine
+     * cachePool
      *
      * @var mixed
      * @access protected
      */
-    protected $cacheEngine;
+    protected $cachePool;
 
     /**
      * cacheKey
@@ -154,7 +154,7 @@ class Router implements RouteableInterface
      * @access public
      * @param mixed $parser
      */
-    public function __construct ($parser)
+    public function __construct($parser)
     {
         $this->parser = $parser ?: new StdParser;
     }
@@ -166,7 +166,7 @@ class Router implements RouteableInterface
      * @param Dispatcher $dispatcher
      * @return Router
      */
-    public function setDispatcher (Dispatcher $dispatcher)
+    public function setDispatcher(Dispatcher $dispatcher)
     {
         $this->dispatcher = $dispatcher;
 
@@ -174,15 +174,15 @@ class Router implements RouteableInterface
     }
 
     /**
-     * setCacheEngine function.
+     * setcachePool function.
      *
      * @access public
-     * @param CacheInterface $cacheEngine
+     * @param CacheInterface $cachePool
      * @return Router
      */
-    public function setCacheEngine (CacheInterface $cacheEngine)
+    public function setCachePool(CacheItemPoolInterface $cachePool)
     {
-        $this->cacheEngine = $cacheEngine;
+        $this->cachePool = $cachePool;
 
         return $this;
     }
@@ -194,7 +194,7 @@ class Router implements RouteableInterface
      * @param int $cacheTtl
      * @return Router
      */
-    public function setCacheTtl (int $cacheTtl)
+    public function setCacheTtl(int $cacheTtl)
     {
         $this->cacheTtl = $cacheTtl;
 
@@ -208,7 +208,7 @@ class Router implements RouteableInterface
      * @param string $cacheKey
      * @return Router
      */
-    public function setCacheKey (string $cacheKey)
+    public function setCacheKey(string $cacheKey)
     {
         $this->cacheKey = $cacheKey;
         return $this;
@@ -221,7 +221,7 @@ class Router implements RouteableInterface
      * @param string $identifier
      * @return null|Route
      */
-    public function getRoute (string $identifier)
+    public function getRoute(string $identifier)
     {
         return !empty($this->routes[$identifier]) ? $this->routes[$identifier] : null;
     }
@@ -232,7 +232,7 @@ class Router implements RouteableInterface
      * @access public
      * @return array
      */
-    public function getRoutes ()
+    public function getRoutes()
     {
         return $this->routes;
     }
@@ -245,10 +245,10 @@ class Router implements RouteableInterface
      * @param array $routes
      * @return Router
      */
-    public function setRoutes (array $method, array $routes)
+    public function setRoutes(array $method, array $routes)
     {
         foreach ($routes as $pattern => $handler) {
-            $this->map ($method, $pattern, $handler);
+            $this->map($method, $pattern, $handler);
         }
 
         return $this;
@@ -260,7 +260,7 @@ class Router implements RouteableInterface
      * @access public
      * @return void
      */
-    public function getResult ()
+    public function getResult()
     {
         return $this->dispatch_result;
     }
@@ -268,19 +268,19 @@ class Router implements RouteableInterface
     /**
      * {@inheritdoc}
      */
-    public function map ($method, string $pattern, $handler)
+    public function map($method, string $pattern, $handler)
     {
-        $method = is_array ($method) ? $method : [$method];
+        $method = is_array($method) ? $method : [$method];
 
         foreach ($method as $m) {
-            $route = $this->createRoute ($m, $pattern, $handler);
+            $route = $this->createRoute($m, $pattern, $handler);
 
             $this->routeCount++;
 
-            $this->routes[$route->getIdentifier ()] = $route;
+            $this->routes[$route->getIdentifier()] = $route;
 
-            if (is_callable ($handler)) {
-                $route->bind ('run', $handler);
+            if (is_callable($handler)) {
+                $route->bind('run', $handler);
             }
         }
 
@@ -296,9 +296,31 @@ class Router implements RouteableInterface
      * @param mixed $handler
      * @return Route Route
      */
-    protected function createRoute (string $method, string $pattern, $handler)
+    protected function createRoute(string $method, string $pattern, $handler)
     {
-        return new Route ($method, $pattern, $handler, $this->routeGroup, 'route_' . $this->routeCount);
+        return new Route($method, $pattern, $handler, $this->routeGroup, 'route_' . $this->routeCount);
+    }
+
+    /**
+     * cacheAble function.
+     *
+     * @access protected
+     * @return void
+     */
+    protected function cacheAble()
+    {
+        return !empty($this->cachePool) && !empty($this->cacheKey);
+    }
+
+    /**
+     * getCacheItem function.
+     *
+     * @access protected
+     * @return CacheItemInterface
+     */
+    protected function getCacheItem()
+    {
+        return $this->cacheAble() ? $this->cachePool->getItem($this->cacheKey)  : new \Resilient\Dummy\CacheItem();
     }
 
     /**
@@ -309,7 +331,7 @@ class Router implements RouteableInterface
      * @param array $options (default: [])
      * @return Dispatcher
      */
-    protected function routeDispatcher (callable $routeDefinitionCallback, array $options = [])
+    protected function routeDispatcher(callable $routeDefinitionCallback, array $options = [])
     {
         $options += [
             'routeParser' => 'FastRoute\\RouteParser\\Std',
@@ -317,31 +339,24 @@ class Router implements RouteableInterface
             'dispatcher' => 'FastRoute\\Dispatcher\\GroupCountBased',
             'routeCollector' => 'FastRoute\\RouteCollector'
         ];
-        
-        $dispatchDataRunner = function () use ($routeDefinitionCallback, $options) {
-            $routeCollector = new $options['routeCollector'](
-                new $options['routeParser'], new $options['dataGenerator']
-            );
-            $routeDefinitionCallback ($routeCollector);
-    
-            return $routeCollector->getData ();
-        };
-        
-        if (!empty($this->cacheEngine) && !empty($this->cacheKey)) {
-            if ($this->cacheEngine->has ($this->cacheKey)) {
-                $dispatchData = $this->cacheEngine->get ($this->cacheKey);
-                
-                return new $options['dispatcher']($dispatchData);
-            } else {
-                $dispatchData = $dispatchDataRunner ();
-                $this->cacheEngine->set ($this->cacheKey, $dispatchData, $this->cacheTtl);
-                
-                return $dispatchData;
-            }
-        } else {
-            return new $options['dispatcher']($dispatchDataRunner ());
+
+        $cacheItem = $this->getCacheItem();
+
+        if ($cacheItem->isHit()) {
+            return new $options['dispatcher']($cacheItem->get($this->cacheKey));
         }
-        
+
+        $routeCollector = new $options['routeCollector'](
+            new $options['routeParser'], new $options['dataGenerator']
+        );
+        $routeDefinitionCallback ($routeCollector);
+
+        $dispatchData = $routeCollector->getData();
+
+        $cacheItem->set($dispatchData);
+        $cacheItem->expiresAfter($this->cacheTtl);
+
+        return new $options['dispatcher']($dispatchData);
     }
 
     /**
@@ -350,19 +365,17 @@ class Router implements RouteableInterface
      * @access protected
      * @return Dispatcher
      */
-    protected function createDispatcher ()
+    protected function createDispatcher()
     {
         if ($this->dispatcher) {
             return $this->dispatcher;
         }
 
-        $routeDefinitionCallback = function (RouteCollector $r) {
-            foreach ($this->getRoutes () as $route) {
-                $r->addRoute ($route->getMethod (), $route->getPattern (), $route->getIdentifier ());
+        $this->dispatcher = $this->routeDispatcher(function (RouteCollector $r) {
+            foreach ($this->getRoutes() as $route) {
+                $r->addRoute($route->getMethod(), $route->getPattern(), $route->getIdentifier());
             }
-        };
-
-        $this->dispatcher = $this->routeDispatcher ($routeDefinitionCallback, [
+        }, [
             'routeParser' => $this->parser,
         ]);
 
@@ -377,45 +390,42 @@ class Router implements RouteableInterface
      * @param string $method (default: 'GET')
      * @return Route Handling Method
      */
-    public function dispatch (UriInterface $uri, $method = 'GET')
+    public function dispatch(UriInterface $uri, $method = 'GET')
     {
-        $this->dispatch_result = $this->createDispatcher ()->dispatch (
+        $this->dispatch_result = $this->createDispatcher()->dispatch(
             $method,
-            $uri->getPath ()
+            $uri->getPath()
         );
 
-        $code = array_shift ($this->dispatch_result);
-        
-        $handlerMapper = [
+        $code = array_shift($this->dispatch_result);
+
+        if ($code == Dispatcher::FOUND) {
+            return $this->routerRoutine(...$this->dispatch_result);
+        }
+
+        $exceptionMapper = [
             Dispatcher::NOT_FOUND => [
-                'methodName' => $this->notFoundFuncName,
-                'args' => [$uri, $method]
+                $this->notFoundFuncName,
+                [$uri, $method],
+                ((string) $uri) . ' Not Available'
             ],
             Dispatcher::METHOD_NOT_ALLOWED => [
-                'methodName' => $this->forbiddenFuncName,
-                'args' => [$uri, $method]
-            ],
-            Dispatcher::FOUND => [
-                'methodName' => 'routerRoutine',
-                'args' => $this->dispatch_result
+                $this->forbiddenFuncName,
+                [$uri, $method],
+                'Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed'
             ]
         ];
-        
-        $handler = $handlerMapper[$code];
 
-        return (method_exists ($this, $handler['methodName']) || $this->hasMethod ($handler['methodName'])) ?
-                $this->{$handler['methodName']}(...$handler['args']) : $this->handleException ($handler['methodName'], $uri, $method);
+        return $this->handleException(...$exceptionMapper[$code]);
     }
-    
-    protected function handleException (string $exception, $uri, $method)
+
+    protected function handleException(string $handler, array $args, string $message)
     {
-        if ($exception === $this->notFoundFuncName) {
-            throw new BadMethodCallException ('Method : ' . ((string) $method) . ' ON uri : ' . ((string) $uri) . ' Not Allowed');
-        } elseif ($exception === $this->forbiddenFuncName) {
-            throw new BadMethodCallException (((string) $uri) . ' Not Available');
-        } else {
-            throw new BadMethodCallException ('There is no method or exception to handle this request ' . ((string) $uri));
+        if ($this->hasMethod($handler)) {
+            return $this->$handler(...$args);
         }
+
+        throw new BadMethodCallException($message);
     }
 
     /**
@@ -425,9 +435,9 @@ class Router implements RouteableInterface
      * @param callable $callable
      * @return Router
      */
-    public function whenNotFound (callable $callable)
+    public function whenNotFound(callable $callable)
     {
-        $this->bind ($this->notFoundFuncName, $callable);
+        $this->bind($this->notFoundFuncName, $callable);
 
         return $this;
     }
@@ -439,9 +449,9 @@ class Router implements RouteableInterface
      * @param callable $callable
      * @return Router
      */
-    public function whenForbidden (callable $callable)
+    public function whenForbidden(callable $callable)
     {
-        $this->bind ($this->forbiddenFuncName, $callable);
+        $this->bind($this->forbiddenFuncName, $callable);
 
         return $this;
     }
@@ -454,20 +464,20 @@ class Router implements RouteableInterface
      * @param mixed $args
      * @return void
      */
-    protected function routerRoutine ($identifier, $args)
+    protected function routerRoutine($identifier, $args)
     {
-        $route = $this->getRoute ($identifier);
+        $route = $this->getRoute($identifier);
 
         if (!empty($args)) {
             foreach ($args as &$v) {
-                $v = urldecode ($v);
+                $v = urldecode($v);
             }
         }
 
-        if ($route->hasMethod ('run')) {
-            return $route->run ($args);
-        } else {
-            return $route->setArgs ($args);
+        if ($route->hasMethod('run')) {
+            return $route->run($args);
         }
+
+        return $route->setArgs($args);
     }
 }
