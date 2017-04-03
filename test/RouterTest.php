@@ -4,7 +4,7 @@ namespace Resilient;
 
 use \Resilient\Route;
 use \Resilient\Http\Uri;
-use \Resilient\Factory\Uri as FactoryUri;
+use \Resilient\Http\Factory\Uri as FactoryUri;
 use BadMethodCallException;
 
 class RouterTest extends \PHPUnit\Framework\TestCase

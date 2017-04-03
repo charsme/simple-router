@@ -400,7 +400,7 @@ class Router implements RouteableInterface
         $code = array_shift($this->dispatch_result);
 
         if ($code == Dispatcher::FOUND) {
-            return $this->routerRoutine(...$this->dispatch_result);
+            return $this->routerRoutine($this->dispatch_result[0], $this->dispatch_result[1]);
         }
 
         $exceptionMapper = [
@@ -416,7 +416,9 @@ class Router implements RouteableInterface
             ]
         ];
 
-        return $this->handleException(...$exceptionMapper[$code]);
+        $handling = $exceptionMapper[$code];
+
+        return $this->handleException($handling[0], $handling[1], $handling[2]);
     }
 
     protected function handleException(string $handler, array $args, string $message)
