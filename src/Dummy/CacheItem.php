@@ -10,7 +10,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function getKey()
+    public function getKey ()
     {
         return 'no-key';
     }
@@ -18,7 +18,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function get()
+    public function get ()
     {
         return null;
     }
@@ -26,7 +26,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function isHit()
+    public function isHit ()
     {
         return false;
     }
@@ -34,7 +34,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function set($value)
+    public function set ($value)
     {
         return $this;
     }
@@ -42,7 +42,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function expiresAt($expiration)
+    public function expiresAt ($expiration)
     {
         return $this;
     }
@@ -50,7 +50,7 @@ class Cacheitem implements CacheItemInterface
     /**
      * {@inheritdoc}
      */
-    public function expiresAfter($time)
+    public function expiresAfter ($time)
     {
         return $this;
     }
