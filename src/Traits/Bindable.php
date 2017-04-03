@@ -10,7 +10,7 @@ trait Bindable
 {
     protected $binded;
 
-    public function bind(string $name, callable $callable)
+    public function bind (string $name, callable $callable)
     {
         if (!is_callable($callable)) {
             throw new InvalidArgumentException('Second param must be callable');
@@ -21,12 +21,12 @@ trait Bindable
         return $this;
     }
 
-    public function hasMethod(string $name)
+    public function hasMethod (string $name)
     {
         return isset($this->binded[$name]);
     }
 
-    public function __call($name, array $args)
+    public function __call ($name, array $args)
     {
         if ($this->hasMethod($name)) {
             return $this->getBind($name, $args);
@@ -35,7 +35,7 @@ trait Bindable
         throw new RunTimeException('There is no method with the given name to call');
     }
 
-    public function getBind($name, $args)
+    public function getBind ($name, $args)
     {
         return $this->binded[$name](...$args);
     }

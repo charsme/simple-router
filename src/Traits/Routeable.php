@@ -15,7 +15,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function get(string $pattern, $handler)
+    public function get (string $pattern, $handler)
     {
         return $this->map('GET', $pattern, $handler);
     }
@@ -28,7 +28,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function post(string $pattern, $handler)
+    public function post (string $pattern, $handler)
     {
         return $this->map('POST', $pattern, $handler);
     }
@@ -41,7 +41,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function put(string $pattern, $handler)
+    public function put (string $pattern, $handler)
     {
         return $this->map('PUT', $pattern, $handler);
     }
@@ -54,7 +54,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function patch(string $pattern, $handler)
+    public function patch (string $pattern, $handler)
     {
         return $this->map('PATCH', $pattern, $handler);
     }
@@ -67,7 +67,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function delete(string $pattern, $handler)
+    public function delete (string $pattern, $handler)
     {
         return $this->map('DELETE', $pattern, $handler);
     }
@@ -80,7 +80,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function options(string $pattern, $handler)
+    public function options (string $pattern, $handler)
     {
         return $this->map('OPTIONS', $pattern, $handler);
     }
@@ -93,7 +93,7 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    public function any(string $pattern, $handler)
+    public function any (string $pattern, $handler)
     {
         return $this->map(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $pattern, $handler);
     }
@@ -108,5 +108,5 @@ trait Routeable
      * @param mixed $handler
      * @return Route
      */
-    abstract public function map($methods, string $pattern, $handler);
+    abstract public function map ($methods, string $pattern, $handler);
 }
