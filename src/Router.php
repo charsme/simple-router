@@ -393,7 +393,7 @@ class Router implements RouteableInterface
             return $this->dispatcher;
         }
 
-        $this->dispatcher = $this->routeDispatcher(function (RouteCollector $r) {
+        $this->dispatcher = $this->routeDispatcher(function(RouteCollector $r) {
             foreach ($this->getRoutes() as $route) {
                 $r->addRoute($route->getMethod(), $route->getPattern(), $route->getIdentifier());
             }
