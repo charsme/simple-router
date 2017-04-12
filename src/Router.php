@@ -12,7 +12,8 @@ use \FastRoute\RouteCollector;
 use \FastRoute\RouteParser;
 use \FastRoute\RouteParser\Std as StdParser;
 use \Psr\Http\Message\UriInterface;
-use \Psr\SimpleCache\CacheItemPoolInterface;
+use \Psr\Cache\CacheItemPoolInterface;
+use \Psr\Cache\CacheItemInterface;
 
 /**
  * Router class.
@@ -112,7 +113,7 @@ class Router implements RouteableInterface
      * @var string
      * @access protected
      */
-    protected $cacheKey = "{Resilient\Router}/router.cache";
+    protected $cacheKey = "router.cache";
 
     /**
      * cacheTtl
@@ -323,6 +324,13 @@ class Router implements RouteableInterface
         return $this->cacheAble() ? $this->cachePool->getItem($this->cacheKey) : new \Resilient\Dummy\CacheItem();
     }
 
+    /**
+     * saveCacheItem function.
+     *
+     * @access protected
+     * @param CacheItemInterface $cacheItem
+     * @return boolean
+     */
     protected function saveCacheItem(CacheItemInterface $cacheItem)
     {
         if ($cacheItem instanceof \Resilient\Dummy\CacheItem) {

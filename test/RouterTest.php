@@ -183,6 +183,25 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
         $this->assertInstanceOf(DummyController::class, $invoke($result->getArgs()));
     }
+
+    public function testCachedRouter()
+    {
+        $uri = FactoryUri::createFromString('http://www.example.com/jeng');
+
+        $cachepool = new \Symfony\Component\Cache\Adapter\ArrayAdapter();
+
+        $this->router->setCachePool($cachepool);
+
+        $result = $this->router->dispatch($uri, 'POST');
+
+        $this->assertEquals(DummyController::class, $result->getHandler());
+
+        $classname = $result->getHandler();
+        $invoke = new $classname();
+
+        $this->assertInstanceOf(DummyController::class, $invoke($result->getArgs()));
+    }
+
 }
 
 class DummyController
