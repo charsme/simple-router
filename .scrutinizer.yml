@@ -15,7 +15,7 @@ coding_style:
             general:
                 linefeed_character: newline
             before_parentheses:
-                function_declaration: true
+                function_declaration: false
                 closure_definition: false
                 function_call: false
                 if: true

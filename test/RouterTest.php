@@ -201,7 +201,6 @@ class RouterTest extends \PHPUnit\Framework\TestCase
 
         $this->assertInstanceOf(DummyController::class, $invoke($result->getArgs()));
     }
-
 }
 
 class DummyController

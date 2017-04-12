@@ -178,7 +178,7 @@ class Router implements RouteableInterface
      * setcachePool function.
      *
      * @access public
-     * @param CacheInterface $cachePool
+     * @param CacheItemPoolInterface $cachePool
      * @return Router
      */
     public function setCachePool(CacheItemPoolInterface $cachePool)
@@ -306,7 +306,7 @@ class Router implements RouteableInterface
      * cacheAble function.
      *
      * @access protected
-     * @return void
+     * @return boolean
      */
     protected function cacheAble()
     {
@@ -364,7 +364,7 @@ class Router implements RouteableInterface
         $cacheItem = $this->getCacheItem();
 
         if ($cacheItem->isHit()) {
-            return new $options['dispatcher']($cacheItem->get($this->cacheKey));
+            return new $options['dispatcher']($cacheItem->get());
         }
 
         $routeCollector = new $options['routeCollector'](
