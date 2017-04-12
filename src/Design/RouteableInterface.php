@@ -15,7 +15,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function get (string $pattern, $handler);
+    public function get(string $pattern, $handler);
 
     /**
      * post function.
@@ -25,7 +25,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function post (string $pattern, $handler);
+    public function post(string $pattern, $handler);
 
     /**
      * put function.
@@ -35,7 +35,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function put (string $pattern, $handler);
+    public function put(string $pattern, $handler);
 
     /**
      * patch function.
@@ -45,7 +45,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function patch (string $pattern, $handler);
+    public function patch(string $pattern, $handler);
 
     /**
      * delete function.
@@ -55,7 +55,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function delete (string $pattern, $handler);
+    public function delete(string $pattern, $handler);
 
     /**
      * options function.
@@ -65,7 +65,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function options (string $pattern, $handler);
+    public function options(string $pattern, $handler);
 
     /**
      * any function.
@@ -75,7 +75,7 @@ interface RouteableInterface
      * @param mixed $handler
      * @return Route
      */
-    public function any (string $pattern, $handler);
+    public function any(string $pattern, $handler);
 
     /**
      * map function.
@@ -86,5 +86,5 @@ interface RouteableInterface
      * @param mixed $handler
      * @return mixed
      */
-    public function map ($methods, string $pattern, $handler);
+    public function map($methods, string $pattern, $handler);
 }
